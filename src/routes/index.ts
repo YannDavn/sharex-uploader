@@ -1,6 +1,6 @@
 import express from "express";
-import mz from "mz";
-const fs = mz.fs;
+import { config } from "../config";
+import * as fs from "fs/promises";
 
 const router = express.Router();
 
@@ -21,22 +21,19 @@ router.post("/", async (req, res, next) => {
                 break;
             }
         }
-        await fs.mkdir(`uploads/${id}`);
+        await fs.mkdir(`${config.uploadDir}/${id}`, { recursive: true });
         const fileName = `${id}.${file.originalname.split(".").pop()}`;
         await fs.rename(
-            `uploads/${file.filename}`,
-            `uploads/${id}/${fileName}`
+            `${config.uploadDir}/${file.filename}`,
+            `${config.uploadDir}/${id}/${fileName}`
         );
-        await fs.writeFile(`uploads/${id}/meta`, JSON.stringify(file), {
-            flag: "a",
-        });
-        return res.json({ link: `https://i.ydav.in/${fileName}` });
+        return res.json({ link: `${config.url}/${fileName}` });
     } catch (err) {
         if (req.files) {
             try {
                 for (const k of Object.keys(req.files)) {
                     for (const f of (req.files as any)[k]) {
-                        await fs.unlink(`uploads/${f.filename}`);
+                        await fs.unlink(`${config.uploadDir}/${f.filename}`);
                     }
                 }
             } catch (_err) {}
@@ -48,22 +45,14 @@ router.post("/", async (req, res, next) => {
 router.get("/:name", async (req, res, _next) => {
     const folder = req.params.name.split(".")[0];
     try {
-        await fs.stat(`uploads/${folder}`);
+        await fs.stat(`${config.uploadDir}/${folder}`);
     } catch (err) {
         return res.status(404).send();
     }
-    const meta = JSON.parse(
-        await fs.readFile(`uploads/${folder}/meta`, { encoding: "utf8" })
+    const fileContent = await fs.readFile(
+        `uploads/${folder}/${req.params.name}`
     );
-    res.writeHead(200, {
-        "Content-Type": meta.mimetype,
-        "Content-Disposition":
-            "atachment; filename=" +
-            folder +
-            "." +
-            meta.originalname.split(".").pop(),
-    });
-    fs.createReadStream(`uploads/${folder}/${req.params.name}`).pipe(res);
+    return res.end(fileContent);
 });
 
 export default router;

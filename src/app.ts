@@ -2,8 +2,9 @@ import express from "express";
 import multer from "multer";
 import bodyParser from "body-parser";
 
-import indexRouter from "./routes";
+import indexRouter from "./routes/index";
 import { HttpError } from "./helpers/error.helper";
+import { config } from "./config";
 
 var app = express();
 
@@ -23,7 +24,7 @@ app.use(
 
 app.use(
     "/",
-    multer({ dest: "uploads" }).fields([{ name: "img" }]),
+    multer({ dest: config.uploadDir }).fields([{ name: "img" }]),
     indexRouter
 );
 
@@ -42,4 +43,6 @@ app.use(function (
     res.send({ err: err.message });
 });
 
-export default app;
+app.listen(config.port, () => {
+    console.log(`Application listening on port ${config.port}`);
+});
