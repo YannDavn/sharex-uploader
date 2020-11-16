@@ -14,6 +14,8 @@ Le fichier `config.json.dist` doit être copié, renommé en `config.json` et re
 }
 ```
 
+L'application pourra ensuite être testée en exécutant la commande `npm start`
+
 ## II. Configuration ShareX
 
 Tout d'abord, sélectionner l'uploader custom en sélectionnant `Destinations => Image uploader => Custom image uploader`
