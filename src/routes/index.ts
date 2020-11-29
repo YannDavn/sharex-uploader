@@ -49,9 +49,11 @@ router.get("/:name", async (req, res, _next) => {
     } catch (err) {
         return res.status(404).send();
     }
-    const fileContent = await fs.readFile(
-        `uploads/${folder}/${req.params.name}`
-    );
+    const fileName = `uploads/${folder}/${req.params.name}`;
+    if (req.query.download) {
+        return res.download(fileName);
+    }
+    const fileContent = await fs.readFile(fileName);
     return res.end(fileContent);
 });
 
