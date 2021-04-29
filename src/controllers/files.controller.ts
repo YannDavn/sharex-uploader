@@ -1,11 +1,12 @@
 import * as fs from "mz/fs";
 import { config } from "../config";
+import { join } from "path";
 
-const generateId = () => Math.random().toString(36).substr(2, 9)
+const generateId = () => Math.random().toString(36).substr(2, 9);
 
 const generateSafeId = async () => {
   while (true) {
-    const id = generateId()
+    const id = generateId();
     try {
       await fs.stat(`uploads/${id}`);
     } catch (err) {
@@ -53,4 +54,25 @@ export const uploadFile = async (files: any): Promise<string> => {
     }
     throw err;
   }
+};
+
+/**
+ * Parcourt l'entièreté du dossier "uploads" pour supprimer les fichiers "anciens"
+ *
+ */
+export const clearOldFiles = async () => {
+  // Récupération de la liste des noms de fichiers
+  const allFiles = await fs.readdir(config.uploadDir);
+  const d = Date.now();
+  const deletionPromises: Array<Promise<void>> = [];
+  for (const file of allFiles) {
+    // Pour chaque fichier, on récupère sa date de création.
+    const { birthtime } = await fs.stat(join(config.uploadDir, file));
+    if (d - birthtime.getTime() > config.maxAge) {
+      // Si il a été créé il y a plus longtemps que définit en config, on le rajoute à la liste des fichiers à supprimer
+      deletionPromises.push(fs.unlink(join(config.uploadDir, file)))
+    }
+  }
+  // Et on supprime tous les fichiers destinés à la suppression
+  await Promise.all(deletionPromises);
 };
