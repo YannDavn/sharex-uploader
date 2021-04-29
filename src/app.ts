@@ -5,6 +5,7 @@ import bodyParser from "body-parser";
 import indexRouter from "./routes/index";
 import { HttpError } from "./helpers/error.helper";
 import { config } from "./config";
+import { join } from 'path';
 
 var app = express();
 
@@ -16,6 +17,8 @@ app.use(
     multer({ dest: config.uploadDir }).fields([{ name: "img" }]),
     indexRouter
 );
+
+app.use(express.static(join(process.cwd(), 'uploads')));
 
 // catch 404 and forward to error handler
 app.use(function (_req, _res, next) {

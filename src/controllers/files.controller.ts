@@ -31,17 +31,17 @@ export const uploadFile = async (files: any): Promise<string> => {
     // On génère un identifiant unique pour ce fichier
     const id = await generateSafeId();
 
-    // Et ensuite on crée toute l'arborescence : D'abord le dossier
-    await fs.mkdir(`${config.uploadDir}/${id}`, { recursive: true });
+    // On renomme le fichier : [identifiant].[extension originale]
     const fileName = `${id}.${file.originalname.split(".").pop()}`;
-    // Ensuite on y déplace le fichier enregistré par Multer
+    // Ensuite on renomme le fichier enregistré par Multer avec ce nouveau nom
     await fs.rename(
       `${config.uploadDir}/${file.filename}`,
-      `${config.uploadDir}/${id}/${fileName}`
+      `${config.uploadDir}/${fileName}`
     );
     // Et on retourne l'URL de téléchargement
     return `${config.url}/${fileName}`;
   } catch (err) {
+    // En cas d'erreur, on essaie de supprimer tout ce qui a été upload par l'utilisateur
     if (files) {
       try {
         for (const k of Object.keys(files)) {
