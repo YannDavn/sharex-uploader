@@ -12,17 +12,6 @@ app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ extended: false, limit: "50mb" }));
 
 app.use(
-    (
-        req: express.Request,
-        _res: express.Response,
-        next: express.NextFunction
-    ) => {
-        (req as any).Id = Math.random().toString(36).substr(2, 9);
-        return next();
-    }
-);
-
-app.use(
     "/",
     multer({ dest: config.uploadDir }).fields([{ name: "img" }]),
     indexRouter
